@@ -13,7 +13,7 @@ public class Server {
     private final int PACKET_SIZE = 8;
     public Server(int port) throws IOException {
         try(ServerSocket server = new ServerSocket(port);
-            Socket clientSocket = server.accept();
+            Socket clientSocket = server.accept(); // open socket
             DataInputStream in = new DataInputStream(
                     new BufferedInputStream(clientSocket.getInputStream()))) {
             DataOutputStream out = new DataOutputStream(
@@ -22,10 +22,10 @@ public class Server {
             Arrays.fill(packet, (byte) 0x00);
             while (true)
             {
-                packet = in.readNBytes(PACKET_SIZE);
-                out.writeUTF("OK");
+                packet = in.readNBytes(PACKET_SIZE); // read in a packet
+                out.writeUTF("OK"); // packet received successfully
                 System.out.print(new String(packet, StandardCharsets.US_ASCII));
-                if (packet[7] == 0x06) break;
+                if (packet[7] == 0x06) break; // break at EOF
             }
         }
     }
