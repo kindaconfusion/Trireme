@@ -2,8 +2,10 @@ package secure.team4;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 
 public class Client {
     private final int PACKET_SIZE = 8;
@@ -22,21 +24,22 @@ public class Client {
                 }
                 else {
                     byte[] finalContent = new byte[PACKET_SIZE];
+                    Arrays.fill(finalContent, (byte) 0x00);
                     // if we reach the end of file, create a full-size packet
                     // with EOF char at the end
                     // (there may be a better way to do this)
                     for (int i = 0; i < PACKET_SIZE-1; i++) {
-                        finalContent[i] = (fileIndex + i < fileContent.length) ? fileContent[fileIndex+i] : 0;
+                        finalContent[i] = (fileIndex + i < fileContent.length) ? fileContent[fileIndex+i] : 0x06;
                     }
-                    finalContent[7] = 0x06;
                     out.write(finalContent, 0, PACKET_SIZE);
+                    socket.close();
                 }
                 // acknowledge OK signal
                 in.readNBytes(2);
                 fileIndex = fileIndex + 8;
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (SocketException e) {
+            // When the server closes the socket, exit
         }
     }
 }
