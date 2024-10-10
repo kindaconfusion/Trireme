@@ -1,28 +1,29 @@
 package secure.team4;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Scanner;
 
 
 public class Main {
 
     public static void main(String[] args) throws IOException {
         if (args[0].equals("send")) {
-            send("127.0.0.1", 15420);
+            send("127.0.0.1", 15420, args[1]);
         } else {
             receive();
         }
     }
-    public static void send(String hostName, int portNumber) throws IOException {
+    public static void send(String hostName, int portNumber, String file) throws IOException {
+        Scanner fileIn = new Scanner(new FileReader(file));
         try (
             Socket sendSocket = new Socket(hostName, portNumber);
             DataOutputStream out = new DataOutputStream(
                 sendSocket.getOutputStream())) {
-            out.writeUTF("test");
+            while(fileIn.hasNext()) {
+                out.writeUTF(fileIn.next());
+            }
             out.writeUTF("Over");
         }
     }
