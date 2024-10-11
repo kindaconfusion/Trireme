@@ -11,8 +11,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 public class Server {
     private final int PACKET_SIZE = 1000;
 
