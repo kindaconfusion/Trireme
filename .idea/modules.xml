@@ -3,9 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/440Share.iml" filepath="$PROJECT_DIR$/.idea/440Share.iml" />
-      <module fileurl="file://$PROJECT_DIR$/TriremeLib.iml" filepath="$PROJECT_DIR$/TriremeLib.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/TriremeLib.main.iml" filepath="$PROJECT_DIR$/.idea/modules/TriremeLib.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/TriremeLib.test.iml" filepath="$PROJECT_DIR$/.idea/modules/TriremeLib.test.iml" />
     </modules>
   </component>
 </project>
