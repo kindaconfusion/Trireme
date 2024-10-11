@@ -25,7 +25,7 @@ public class Client {
             out.writeInt(fileContent.length);
             out.write(hash);
             while(fileContent.length > fileIndex) {
-                out.write(fileContent, fileIndex, Math.min(PACKET_SIZE, fileContent.length - fileIndex)); // write full-size packet
+                out.write(fileContent, fileIndex, Math.min(PACKET_SIZE, fileContent.length - fileIndex)); // write either PACKET_SIZE length packet or remaining bytes
                 // acknowledge OK signal
                 in.readNBytes(2);
                 fileIndex = fileIndex + PACKET_SIZE;
