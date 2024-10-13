@@ -1,6 +1,7 @@
 package secure.team4;
 
 import java.io.*;
+import java.net.ConnectException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.file.Files;
@@ -30,6 +31,8 @@ public class Client {
                 in.readNBytes(2);
                 fileIndex = fileIndex + PACKET_SIZE;
             }
+        } catch (ConnectException e) {
+            System.out.println("Error: Failed to connect to the server (is it running?)");
         } catch (SocketException e) {
             // When the server closes the socket, exit
         }
