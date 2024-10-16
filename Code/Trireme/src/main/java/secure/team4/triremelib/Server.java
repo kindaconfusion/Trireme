@@ -26,7 +26,6 @@ public class Server extends Thread {
                      new BufferedInputStream(clientSocket.getInputStream()));
              DataOutputStream out = new DataOutputStream(
                      clientSocket.getOutputStream());
-             FileOutputStream fileOut = new FileOutputStream("output");
         )
         {
             {
@@ -34,6 +33,8 @@ public class Server extends Thread {
                 Arrays.fill(packet, (byte) 0x00);
                 fileSize = in.readInt();
                 String hash = new String(in.readNBytes(32), StandardCharsets.UTF_8);
+                String name = in.readUTF();
+                FileOutputStream fileOut = new FileOutputStream(name);
                 while (true) {
                     packet = in.readNBytes(Math.min(fileSize - index, PACKET_SIZE)); // read in a packet
                     out.writeUTF("OK"); // packet received successfully
@@ -45,7 +46,7 @@ public class Server extends Thread {
                     index += PACKET_SIZE;
                 }
                 MessageDigest digest = MessageDigest.getInstance("SHA-256");
-                String outputHash = new String(digest.digest(Files.readAllBytes(Path.of("output"))), StandardCharsets.UTF_8);
+                String outputHash = new String(digest.digest(Files.readAllBytes(Path.of(name))), StandardCharsets.UTF_8);
                 if (!hash.equals(outputHash)) {
                     System.out.println("Warning! File received does not match checksum! This file may be corrupted or tampered with!");
                 }

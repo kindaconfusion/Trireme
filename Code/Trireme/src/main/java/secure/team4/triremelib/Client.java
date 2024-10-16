@@ -25,8 +25,9 @@ public class Client extends Thread {
         // TODO files are limited to 2 GiB
         byte[] fileContent = null;
         byte[] hash = null;
+        Path path = Path.of(filePath);
         try {
-            fileContent = Files.readAllBytes(Path.of(filePath)); // read in file
+            fileContent = Files.readAllBytes(path); // read in file
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             hash = digest.digest(fileContent);
         } catch (IOException e) {
@@ -35,6 +36,7 @@ public class Client extends Thread {
             // fuck you
         }
         try (
+                
                 Socket socket = new Socket(host, hostPort); // open socket
                 DataInputStream in = new DataInputStream(socket.getInputStream());
                 DataOutputStream out = new DataOutputStream(
@@ -42,6 +44,7 @@ public class Client extends Thread {
             if (fileContent != null && hash != null) {
                 out.writeInt(fileContent.length);
                 out.write(hash);
+                out.writeUTF(String.valueOf(path.getFileName()));
 
 
             while(fileContent.length > fileIndex) {
