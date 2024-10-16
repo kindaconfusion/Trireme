@@ -8,8 +8,12 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
+import secure.team4.triremelib.Client;
+import secure.team4.triremelib.Server;
 
 import java.io.File;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 
 public class HomeController {
     public TextField sendPort;
@@ -30,6 +34,13 @@ public class HomeController {
         fileField.setText(file.getAbsolutePath());
     }
 
-    public void onSendButtonClick(ActionEvent actionEvent) {
+    @FXML
+    protected void onSendButtonClick(ActionEvent actionEvent) throws IOException, NoSuchAlgorithmException {
+        Client client = new Client(sendHost.getText(), Integer.parseInt(sendPort.getText()), fileField.getText());
+    }
+
+    @FXML
+    protected void onListenButtonClick(ActionEvent actionEvent) throws IOException {
+        Server server = new Server(Integer.parseInt(recvPort.getText()));
     }
 }
