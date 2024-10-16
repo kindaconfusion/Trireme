@@ -55,8 +55,6 @@ public class Client extends Thread {
             System.out.println("Error: Failed to connect to the server (is it running?)");
         } catch (SocketException e) {
             // When the server closes the socket, exit
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
