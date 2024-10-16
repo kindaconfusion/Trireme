@@ -1,4 +1,4 @@
-package secure.team4.TriremeLib;
+package secure.team4.triremelib;
 
 import java.io.*;
 import java.net.ServerSocket;

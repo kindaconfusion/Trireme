@@ -1,4 +1,4 @@
-package secure.team4.TriremeLib;
+package secure.team4.triremelib;
 
 import java.io.*;
 import java.net.ConnectException;
@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 
 public class Client {
     private final int PACKET_SIZE = 1000;
