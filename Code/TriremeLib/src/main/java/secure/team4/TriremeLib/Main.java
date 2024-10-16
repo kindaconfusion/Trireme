@@ -1,4 +1,4 @@
-package secure.team4;
+package secure.team4.TriremeLib;
 
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
