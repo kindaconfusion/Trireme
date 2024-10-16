@@ -23,7 +23,6 @@ public class HomeController {
     public Button sendFileBtn;
     public TextField fileField;
     @FXML
-    private Label welcomeText;
     final FileChooser fileChooser = new FileChooser();
 
     @FXML

@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<GridPane alignment="TOP_CENTER" hgap="10.0" vgap="5.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="secure.team4.trireme.HomeController">
+<GridPane alignment="TOP_CENTER" hgap="20.0" vgap="5.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="secure.team4.trireme.HomeController">
     <padding><Insets bottom="25" left="25" right="25" top="25" /></padding>
     <TextField fx:id="sendHost" promptText="Hostname" GridPane.columnIndex="0" GridPane.rowIndex="0" />
     <TextField fx:id="sendPort" promptText="Host Port" GridPane.columnIndex="0" GridPane.rowIndex="1" />
