@@ -36,11 +36,13 @@ public class HomeController {
 
     @FXML
     protected void onSendButtonClick(ActionEvent actionEvent) throws IOException, NoSuchAlgorithmException {
-        Client client = new Client(sendHost.getText(), Integer.parseInt(sendPort.getText()), fileField.getText());
+        Thread t = new Thread(new Client(sendHost.getText(), Integer.parseInt(sendPort.getText()), fileField.getText()));
+        t.start();
     }
 
     @FXML
     protected void onListenButtonClick(ActionEvent actionEvent) throws IOException {
-        Server server = new Server(Integer.parseInt(recvPort.getText()));
+        Thread t = new Thread(new Server(Integer.parseInt(recvPort.getText())));
+        t.start();
     }
 }

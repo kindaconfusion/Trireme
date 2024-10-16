@@ -11,10 +11,13 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-public class Server {
+public class Server extends Thread {
     private final int PACKET_SIZE = 1000;
-
-    public Server(int port) throws IOException {
+    private final int port;
+    public Server(int p) {
+        port = p;
+    }
+    public void run() {
         int fileSize = 0;
         int index = 0;
         try (ServerSocket server = new ServerSocket(port);
@@ -49,7 +52,7 @@ public class Server {
             }
         } catch (SocketException e) {
             // When the client closes the socket, exit
-        } catch (NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException | IOException e) {
             throw new RuntimeException(e);
         }
     }
