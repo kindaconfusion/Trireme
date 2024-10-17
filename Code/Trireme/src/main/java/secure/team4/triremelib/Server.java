@@ -18,7 +18,7 @@ public class Server extends Thread {
         port = p;
     }
     public void run() {
-        int fileSize = 0;
+        long fileSize = 0;
         int index = 0;
         try (ServerSocket server = new ServerSocket(port);
              Socket clientSocket = server.accept(); // open socket
@@ -31,12 +31,12 @@ public class Server extends Thread {
             {
                 byte[] packet = new byte[PACKET_SIZE];
                 Arrays.fill(packet, (byte) 0x00);
-                fileSize = in.readInt();
-                String hash = new String(in.readNBytes(32), StandardCharsets.UTF_8);
+                fileSize = in.readLong();
+                //String hash = new String(in.readNBytes(32), StandardCharsets.UTF_8);
                 String name = in.readUTF();
                 FileOutputStream fileOut = new FileOutputStream(name);
                 while (true) {
-                    packet = in.readNBytes(Math.min(fileSize - index, PACKET_SIZE)); // read in a packet
+                    packet = in.readNBytes((int) Math.min(fileSize - index, PACKET_SIZE)); // read in a packet
                     out.writeUTF("OK"); // packet received successfully
                     fileOut.write(packet);
                     if (fileSize - index < PACKET_SIZE) {
@@ -45,15 +45,10 @@ public class Server extends Thread {
                     }
                     index += PACKET_SIZE;
                 }
-                MessageDigest digest = MessageDigest.getInstance("SHA-256");
-                String outputHash = new String(digest.digest(Files.readAllBytes(Path.of(name))), StandardCharsets.UTF_8);
-                if (!hash.equals(outputHash)) {
-                    System.out.println("Warning! File received does not match checksum! This file may be corrupted or tampered with!");
-                }
             }
         } catch (SocketException e) {
             // When the client closes the socket, exit
-        } catch (NoSuchAlgorithmException | IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

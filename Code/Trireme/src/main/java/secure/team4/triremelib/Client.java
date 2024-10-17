@@ -21,39 +21,25 @@ public class Client extends Thread {
         filePath = file;
     }
     public void run() {
-        int fileIndex = 0;
-        // TODO files are limited to 2 GiB
-        byte[] fileContent = null;
-        byte[] hash = null;
+        byte[] contentBuf = new byte[PACKET_SIZE];
         Path path = Path.of(filePath);
-        try {
-            fileContent = Files.readAllBytes(path); // read in file
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            hash = digest.digest(fileContent);
-        } catch (IOException e) {
-            // do some error handling because the file doesn't exist
-        } catch (NoSuchAlgorithmException e) {
-            // fuck you
-        }
         try (
-                
+                RandomAccessFile file = new RandomAccessFile(new File(filePath), "r"); // read in file
                 Socket socket = new Socket(host, hostPort); // open socket
                 DataInputStream in = new DataInputStream(socket.getInputStream());
                 DataOutputStream out = new DataOutputStream(
                         socket.getOutputStream())) {
-            if (fileContent != null && hash != null) {
-                out.writeInt(fileContent.length);
-                out.write(hash);
-                out.writeUTF(String.valueOf(path.getFileName()));
-
-
-            while(fileContent.length > fileIndex) {
-                out.write(fileContent, fileIndex, Math.min(PACKET_SIZE, fileContent.length - fileIndex)); // write either PACKET_SIZE length packet or remaining bytes
+                out.writeLong(file.length());
+                String fileName = String.valueOf(path.getFileName());
+                out.writeUTF(fileName);
+            while(file.length() > file.getFilePointer()) {
+                file.read(contentBuf); // write either PACKET_SIZE length packet or remaining bytes
+                out.write(contentBuf);
                 // acknowledge OK signal
                 in.readNBytes(2);
-                fileIndex = fileIndex + PACKET_SIZE;
+                file.seek(1000);
             }
-            }
+            // TODO Checksumming currently disabled
         } catch (ConnectException e) {
             System.out.println("Error: Failed to connect to the server (is it running?)");
         } catch (SocketException e) {
