@@ -22,8 +22,11 @@ public class HomeController {
     public TextField sendHost;
     public Button sendFileBtn;
     public TextField fileField;
+    public boolean servRunning;
     @FXML
     final FileChooser fileChooser = new FileChooser();
+    public Button listen;
+    private Thread server;
 
     @FXML
     protected void onSelectButtonClick(ActionEvent ae) {
@@ -41,7 +44,15 @@ public class HomeController {
 
     @FXML
     protected void onListenButtonClick(ActionEvent actionEvent) throws IOException {
-        Thread t = new Thread(new Server(Integer.parseInt(recvPort.getText())));
-        t.start();
+        if (!servRunning) {
+            server = new Thread(new Server(Integer.parseInt(recvPort.getText())));
+            server.start();
+            servRunning = true;
+            listen.setText("Stop Listening");
+        } else {
+            server.interrupt();
+            servRunning = false;
+            listen.setText("Start Listening");
+        }
     }
 }
