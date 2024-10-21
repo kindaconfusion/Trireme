@@ -14,10 +14,12 @@ import java.util.Arrays;
 public class Server extends Thread {
     private final int PACKET_SIZE = 1000;
     private final int port;
+    public String hash = null;
     public Server(int p) {
         port = p;
     }
     public void run() {
+        System.out.println("Server running");
         long fileSize = 0;
         int index = 0;
         try (ServerSocket server = new ServerSocket(port);
@@ -32,7 +34,7 @@ public class Server extends Thread {
                 byte[] packet = new byte[PACKET_SIZE];
                 Arrays.fill(packet, (byte) 0x00);
                 fileSize = in.readLong();
-                //String hash = new String(in.readNBytes(32), StandardCharsets.UTF_8);
+                String inHash = "";
                 String name = in.readUTF();
                 FileOutputStream fileOut = new FileOutputStream(name);
                 while (true) {
@@ -40,15 +42,30 @@ public class Server extends Thread {
                     out.writeUTF("OK"); // packet received successfully
                     fileOut.write(packet);
                     if (fileSize - index < PACKET_SIZE) {
+                        inHash = in.readUTF();
+                        System.out.println(inHash);
+                        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+                        byte[] byteshash = digest.digest(Files.readAllBytes(Path.of("hw1.py")));
+                        StringBuilder hexString = new StringBuilder();
+                        for (byte b : byteshash) {
+                            // Convert each byte to a 2-digit hex string and append it to the builder
+                            hexString.append(String.format("%02x", b));
+                        }
+                        if (!hexString.toString().equals(inHash)) {
+                            System.out.println("Warning! File checksum does not match original file. File may be corrupt or tampered with.");
+                        }
                         clientSocket.close();
                         break;
                     }
                     index += PACKET_SIZE;
                 }
+
             }
         } catch (SocketException e) {
             // When the client closes the socket, exit
         } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
     }
