@@ -23,8 +23,7 @@ public class Server extends Thread {
                      new BufferedInputStream(clientSocket.getInputStream()));
              DataOutputStream out = new DataOutputStream(
                      clientSocket.getOutputStream())
-        )
-        {
+        ) {
             {
                 byte[] packet = new byte[PACKET_SIZE];
                 Arrays.fill(packet, (byte) 0x00);
