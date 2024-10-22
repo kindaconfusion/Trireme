@@ -4,6 +4,7 @@ import atlantafx.base.theme.PrimerDark;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -11,6 +12,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -21,6 +24,7 @@ import secure.team4.triremelib.Server;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 public class TriremeApplication extends Application {
@@ -43,6 +47,12 @@ public class TriremeApplication extends Application {
             }
             return null;
         };
+        Image logo = new Image(Objects.requireNonNull(getClass().getResource("/trireme-logo.png")).toString(), 283, 120, true, true, true);
+        ImageView iv = new ImageView();
+        iv.setFitHeight(150);
+        iv.setFitWidth(283);
+        iv.setImage(logo);
+
         TextField sendHost = new TextField();
         sendHost.setPromptText("Hostname");
         TextField sendPort = new TextField();
@@ -78,16 +88,19 @@ public class TriremeApplication extends Application {
             }
         });
 
-        grid.add(sendHost, 0, 0);
-        grid.add(sendPort, 0, 1);
-        grid.add(selectBtn, 0, 2);
-        grid.add(fileText, 0, 3);
-        grid.add(sendBtn, 0, 4);
+        grid.add(iv, 0, 0, 2, 1);
+        GridPane.setHalignment(iv, HPos.CENTER);
 
-        grid.add(recvPort, 1, 0);
-        grid.add(recvBtn, 1, 1);
+        grid.add(sendHost, 0, 1);
+        grid.add(sendPort, 0, 2);
+        grid.add(selectBtn, 0, 3);
+        grid.add(fileText, 0, 4);
+        grid.add(sendBtn, 0, 5);
 
-        Scene scene = new Scene(grid, 600, 400);
+        grid.add(recvPort, 1, 1);
+        grid.add(recvBtn, 1, 2);
+
+        Scene scene = new Scene(grid, 600, 500);
         stage.setTitle("Trireme");
         stage.setScene(scene);
         stage.show();
