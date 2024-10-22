@@ -49,7 +49,7 @@ public class TriremeApplication extends Application {
         };
         Image logo = new Image(Objects.requireNonNull(getClass().getResource("/trireme-logo.png")).toString(), 283, 120, true, true, true);
         ImageView iv = new ImageView();
-        iv.setFitHeight(150);
+        iv.setFitHeight(120);
         iv.setFitWidth(283);
         iv.setImage(logo);
 
