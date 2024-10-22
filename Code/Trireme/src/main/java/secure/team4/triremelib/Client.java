@@ -34,7 +34,7 @@ public class Client extends Thread {
                 DataInputStream in = new DataInputStream(socket.getInputStream());
                 DataOutputStream out = new DataOutputStream(
                         socket.getOutputStream());
-                DigestOutputStream digest = new DigestOutputStream(out, MessageDigest.getInstance("SHA-256"))) {
+                DigestOutputStream digest = new DigestOutputStream(out, MessageDigest.getInstance("SHA-512"))) {
             out.writeLong(file.length());
             long remaining = file.length();
             String fileName = String.valueOf(path.getFileName());

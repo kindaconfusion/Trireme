@@ -7,6 +7,7 @@ import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -38,14 +39,14 @@ public class Server extends Thread {
                 String inHash = "";
                 String name = in.readUTF();
                 FileOutputStream fileOut = new FileOutputStream(name);
+                DigestOutputStream digest = new DigestOutputStream(fileOut, MessageDigest.getInstance("SHA-512"));
                 while (true) {
                     if (remaining < 0) {
+                        digest.close();
                         inHash = in.readUTF();
                         System.out.println(inHash);
-                        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-                        byte[] byteshash = digest.digest(Files.readAllBytes(Path.of(name))); // TODO cannot process files >2gb
                         StringBuilder hexString = new StringBuilder();
-                        for (byte b : byteshash) {
+                        for (byte b : digest.getMessageDigest().digest()) {
                             // Convert each byte to a 2-digit hex string and append it to the builder
                             hexString.append(String.format("%02x", b));
                         }
@@ -60,7 +61,7 @@ public class Server extends Thread {
                     packet = in.readNBytes((int) Math.min(remaining, PACKET_SIZE)); // read in a packet
                     remaining -= PACKET_SIZE;
                     out.writeUTF("OK"); // packet received successfully
-                    fileOut.write(packet);
+                    digest.write(packet);
                 }
 
             }
