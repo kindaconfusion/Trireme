@@ -10,15 +10,18 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.GridPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import javafx.util.converter.IntegerStringConverter;
 import secure.team4.triremelib.Client;
 import secure.team4.triremelib.Server;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.function.UnaryOperator;
 
 public class TriremeApplication extends Application {
     private boolean serverRunning = false;
@@ -33,18 +36,28 @@ public class TriremeApplication extends Application {
         grid.setHgap(20);
         grid.setVgap(10);
         grid.setPadding(new Insets(25, 25, 25, 25));
-
+        UnaryOperator<TextFormatter.Change> portFilter = change -> {
+            String newText = change.getControlNewText();
+            if (newText.matches("-?([1-9][0-9]*)?") && newText.length() < 6) {
+                return change;
+            }
+            return null;
+        };
         TextField sendHost = new TextField();
         sendHost.setPromptText("Hostname");
         TextField sendPort = new TextField();
         sendPort.setPromptText("Host Port");
+        sendPort.setTextFormatter(
+                new TextFormatter<Integer>(new IntegerStringConverter(), null, portFilter));
         Button selectBtn = new Button("Select File");
         TextField fileText = new TextField();
         fileText.setPromptText("File");
         Button sendBtn = new Button("Send");
-
         TextField recvPort = new TextField();
         recvPort.setPromptText("Listening Port");
+        recvPort.setTextFormatter(
+                new TextFormatter<Integer>(new IntegerStringConverter(), null, portFilter));
+
         Button recvBtn = makeRecvBtn(recvPort);
 
         selectBtn.setOnAction(new EventHandler<ActionEvent>() {
