@@ -8,10 +8,8 @@ import java.nio.file.Path;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 
 public class Client extends Thread {
-    private final int PACKET_SIZE = 1000;
     private final String host;
     private final int hostPort;
     private final String filePath;
@@ -23,6 +21,7 @@ public class Client extends Thread {
     }
 
     public void run() {
+        int PACKET_SIZE = 1000;
         byte[] contentBuf = new byte[PACKET_SIZE];
         Path path = Path.of(filePath);
         System.out.println("Client running");
@@ -36,7 +35,6 @@ public class Client extends Thread {
                         socket.getOutputStream());
                 DigestOutputStream digest = new DigestOutputStream(out, MessageDigest.getInstance("SHA-512"))) {
             out.writeLong(file.length());
-            long remaining = file.length();
             String fileName = String.valueOf(path.getFileName());
             out.writeUTF(fileName);
             digest.on(true);
@@ -51,10 +49,8 @@ public class Client extends Thread {
                 hexString.append(String.format("%02x", b));
             }
             out.writeUTF(hexString.toString());
-            System.out.println(hexString.toString());
+            System.out.println(hexString);
             in.readUTF();
-
-            // TODO Checksumming currently disabled
         } catch (ConnectException e) {
             System.out.println("Error: Failed to connect to the server (is it running?)");
         } catch (SocketException e) {

@@ -3,32 +3,26 @@ package secure.team4.triremelib;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 public class Server extends Thread {
-    private final int PACKET_SIZE = 1000;
     private final int port;
-    public String hash = null;
     public Server(int p) {
         port = p;
     }
     public void run() {
+        int PACKET_SIZE = 1000;
         System.out.println("Server running");
-        long fileSize = 0;
-        int index = 0;
+        long fileSize;
         try (ServerSocket server = new ServerSocket(port);
              Socket clientSocket = server.accept(); // open socket
              DataInputStream in = new DataInputStream(
                      new BufferedInputStream(clientSocket.getInputStream()));
              DataOutputStream out = new DataOutputStream(
-                     clientSocket.getOutputStream());
+                     clientSocket.getOutputStream())
         )
         {
             {
@@ -36,7 +30,7 @@ public class Server extends Thread {
                 Arrays.fill(packet, (byte) 0x00);
                 fileSize = in.readLong();
                 long remaining = fileSize;
-                String inHash = "";
+                String inHash;
                 String name = in.readUTF();
                 FileOutputStream fileOut = new FileOutputStream(name);
                 DigestOutputStream digest = new DigestOutputStream(fileOut, MessageDigest.getInstance("SHA-512"));
@@ -53,7 +47,7 @@ public class Server extends Thread {
                         if (!hexString.toString().equals(inHash)) {
                             System.out.println("Warning! File checksum does not match original file. File may be corrupt or tampered with.");
                         }
-                        System.out.println(hexString.toString());
+                        System.out.println(hexString);
                         out.writeUTF("OK");
                         clientSocket.close();
                         break;
@@ -65,11 +59,7 @@ public class Server extends Thread {
                 }
 
             }
-        } catch (SocketException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchAlgorithmException e) {
+        } catch (IOException | NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
     }
