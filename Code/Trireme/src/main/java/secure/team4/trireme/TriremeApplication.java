@@ -9,9 +9,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextFormatter;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
@@ -25,11 +23,12 @@ import secure.team4.triremelib.Server;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 public class TriremeApplication extends Application {
     private boolean serverRunning = false;
-    private Thread server;
+    private Server server;
     private Thread client;
     @Override
     public void start(Stage stage) throws IOException {
@@ -88,6 +87,8 @@ public class TriremeApplication extends Application {
             }
         });
 
+
+
         grid.add(iv, 0, 0, 2, 1);
         GridPane.setHalignment(iv, HPos.CENTER);
 
@@ -104,6 +105,8 @@ public class TriremeApplication extends Application {
         stage.setTitle("Trireme");
         stage.setScene(scene);
         stage.show();
+
+
     }
 
     private Button makeRecvBtn(TextField recvPort) {
@@ -113,10 +116,24 @@ public class TriremeApplication extends Application {
             @Override
             public void handle(ActionEvent actionEvent) {
                 if (!serverRunning) {
-                    server = new Thread(new Server(Integer.parseInt(recvPort.getText())));
+                    server = new Server(Integer.parseInt(recvPort.getText()));
                     serverRunning = true;
                     recvBtn.setText("Stop Listening");
                     server.start();
+                    server.received.addListener(b -> {
+                        System.out.println("Received send request");
+                        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                        alert.setTitle("Confirmation Dialog");
+                        alert.setHeaderText("Look, a Confirmation Dialog");
+                        alert.setContentText("Are you ok with this?");
+
+                        Optional<ButtonType> result = alert.showAndWait();
+                        if (result.get() == ButtonType.OK){
+                            server.interrupt();
+                        } else {
+                            server.stop();
+                        }
+                    });
                 } else {
                     server.interrupt();
                     serverRunning = false;

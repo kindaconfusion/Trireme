@@ -1,5 +1,7 @@
 package secure.team4.triremelib;
 
+import javafx.beans.property.SimpleBooleanProperty;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -10,13 +12,12 @@ import java.util.Arrays;
 
 public class Server extends Thread {
     private final int port;
+    public SimpleBooleanProperty received = new SimpleBooleanProperty(false);
     public Server(int p) {
         port = p;
     }
     public void run() {
-        int PACKET_SIZE = 1000;
         System.out.println("Server running");
-        long fileSize;
         try (ServerSocket server = new ServerSocket(port);
              Socket clientSocket = server.accept(); // open socket
              DataInputStream in = new DataInputStream(
@@ -24,8 +25,27 @@ public class Server extends Thread {
              DataOutputStream out = new DataOutputStream(
                      clientSocket.getOutputStream())
         ) {
-            {
-                byte[] packet = new byte[PACKET_SIZE];
+            received.set(true);
+            while(!this.isInterrupted()){
+                Thread.sleep(1000);
+            }
+            accept(clientSocket);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void accept(Socket socket) {
+        int PACKET_SIZE = 1000;
+            try(
+            DataInputStream in = new DataInputStream(
+                    new BufferedInputStream(socket.getInputStream()));
+            DataOutputStream out = new DataOutputStream(
+                    socket.getOutputStream())) {
+                long fileSize;
+                byte[] packet = new byte[1000];
                 Arrays.fill(packet, (byte) 0x00);
                 fileSize = in.readLong();
                 long remaining = fileSize;
@@ -48,7 +68,7 @@ public class Server extends Thread {
                         }
                         System.out.println(hexString);
                         out.writeUTF("OK");
-                        clientSocket.close();
+                        socket.close();
                         break;
                     }
                     packet = in.readNBytes((int) Math.min(remaining, PACKET_SIZE)); // read in a packet
@@ -56,10 +76,9 @@ public class Server extends Thread {
                     out.writeUTF("OK"); // packet received successfully
                     digest.write(packet);
                 }
-
+            } catch (IOException | NoSuchAlgorithmException e) {
+                throw new RuntimeException(e);
             }
-        } catch (IOException | NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
         }
-    }
+
 }
