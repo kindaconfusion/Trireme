@@ -45,7 +45,7 @@ public class Server extends Thread {
                         inHash = in.readUTF();
                         System.out.println(inHash);
                         MessageDigest digest = MessageDigest.getInstance("SHA-256");
-                        byte[] byteshash = digest.digest(Files.readAllBytes(Path.of("hw1.py")));
+                        byte[] byteshash = digest.digest(Files.readAllBytes(Path.of(name)));
                         StringBuilder hexString = new StringBuilder();
                         for (byte b : byteshash) {
                             // Convert each byte to a 2-digit hex string and append it to the builder
