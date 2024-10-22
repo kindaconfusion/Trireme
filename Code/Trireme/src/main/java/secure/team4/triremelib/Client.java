@@ -15,43 +15,44 @@ public class Client extends Thread {
     private final String host;
     private final int hostPort;
     private final String filePath;
+
     public Client(String hostName, int port, String file) {
         host = hostName;
         hostPort = port;
         filePath = file;
     }
+
     public void run() {
         byte[] contentBuf = new byte[PACKET_SIZE];
         Path path = Path.of(filePath);
         System.out.println("Client running");
+        File file = new File(filePath);
         try (
-                RandomAccessFile file = new RandomAccessFile(new File(filePath), "r"); // read in file
+                InputStream fis = new FileInputStream(file);
+                //RandomAccessFile file = new RandomAccessFile(new File(filePath), "r"); // read in file
                 Socket socket = new Socket(host, hostPort); // open socket
                 DataInputStream in = new DataInputStream(socket.getInputStream());
                 DataOutputStream out = new DataOutputStream(
                         socket.getOutputStream());
-        DigestOutputStream digest = new DigestOutputStream(out, MessageDigest.getInstance("SHA-256")))
-        {
-                out.writeLong(file.length());
-                long remaining = file.length();
-                String fileName = String.valueOf(path.getFileName());
-                out.writeUTF(fileName);
-                digest.on(true);
-            while(file.length() > file.getFilePointer()) {
-                Arrays.fill(contentBuf, (byte) 0);
-                file.read(contentBuf);
-                digest.write(contentBuf, 0, (int) Math.min(PACKET_SIZE, remaining));
-                // acknowledge OK signal
-                in.readNBytes(2);
-                remaining -= PACKET_SIZE;
+                DigestOutputStream digest = new DigestOutputStream(out, MessageDigest.getInstance("SHA-256"))) {
+            out.writeLong(file.length());
+            long remaining = file.length();
+            String fileName = String.valueOf(path.getFileName());
+            out.writeUTF(fileName);
+            digest.on(true);
+            int count;
+            while ((count = fis.read(contentBuf)) > 0) {
+                digest.write(contentBuf, 0, count);
+                in.readUTF();
             }
-
             StringBuilder hexString = new StringBuilder();
             for (byte b : digest.getMessageDigest().digest()) {
                 // Convert each byte to a 2-digit hex string and append it to the builder
                 hexString.append(String.format("%02x", b));
             }
             out.writeUTF(hexString.toString());
+            System.out.println(hexString.toString());
+            in.readUTF();
 
             // TODO Checksumming currently disabled
         } catch (ConnectException e) {
