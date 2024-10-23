@@ -2,8 +2,6 @@ package secure.team4.trireme;
 
 import atlantafx.base.theme.PrimerDark;
 import javafx.application.Application;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -21,9 +19,8 @@ import secure.team4.triremelib.Client;
 import secure.team4.triremelib.Server;
 
 import java.io.File;
-import java.io.IOException;
+
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 public class TriremeApplication extends Application {
@@ -31,7 +28,7 @@ public class TriremeApplication extends Application {
     private Server server;
     private Thread client;
     @Override
-    public void start(Stage stage) throws IOException {
+    public void start(Stage stage) {
         final FileChooser fileChooser = new FileChooser();
         Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
         GridPane grid = new GridPane();
@@ -57,7 +54,7 @@ public class TriremeApplication extends Application {
         TextField sendPort = new TextField();
         sendPort.setPromptText("Host Port");
         sendPort.setTextFormatter(
-                new TextFormatter<Integer>(new IntegerStringConverter(), null, portFilter));
+                new TextFormatter<>(new IntegerStringConverter(), null, portFilter));
         Button selectBtn = new Button("Select File");
         TextField fileText = new TextField();
         fileText.setPromptText("File");
@@ -65,26 +62,20 @@ public class TriremeApplication extends Application {
         TextField recvPort = new TextField();
         recvPort.setPromptText("Listening Port");
         recvPort.setTextFormatter(
-                new TextFormatter<Integer>(new IntegerStringConverter(), null, portFilter));
+                new TextFormatter<>(new IntegerStringConverter(), null, portFilter));
 
         Button recvBtn = makeRecvBtn(recvPort);
 
-        selectBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                Node source = (Node) actionEvent.getSource();
-                Window stage = source.getScene().getWindow();
-                File file = fileChooser.showOpenDialog(stage);
-                fileText.setText(file.getAbsolutePath());
-            }
+        selectBtn.setOnAction(actionEvent -> {
+            Node source = (Node) actionEvent.getSource();
+            Window stage1 = source.getScene().getWindow();
+            File file = fileChooser.showOpenDialog(stage1);
+            fileText.setText(file.getAbsolutePath());
         });
 
-        sendBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                client = new Thread(new Client(sendHost.getText(), Integer.parseInt(sendPort.getText()), fileText.getText()));
-                client.start();
-            }
+        sendBtn.setOnAction(actionEvent -> {
+            client = new Thread(new Client(sendHost.getText(), Integer.parseInt(sendPort.getText()), fileText.getText()));
+            client.start();
         });
 
 
@@ -112,23 +103,17 @@ public class TriremeApplication extends Application {
     private Button makeRecvBtn(TextField recvPort) {
         Button recvBtn = new Button("Start Listening");
 
-        recvBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                if (!serverRunning) {
-                    server = new Server(Integer.parseInt(recvPort.getText()));
-                    serverRunning = true;
-                    recvBtn.setText("Stop Listening");
-                    server.start();
-                    server.received.addListener(b -> {
-                        System.out.println("Received send request");
-
-                    });
-                } else {
-                    server.interrupt();
-                    serverRunning = false;
-                    recvBtn.setText("Start Listening");
-                }
+        recvBtn.setOnAction(actionEvent -> {
+            if (!serverRunning) {
+                server = new Server(Integer.parseInt(recvPort.getText()));
+                serverRunning = true;
+                recvBtn.setText("Stop Listening");
+                server.start();
+                server.received.addListener(b -> System.out.println("Received send request"));
+            } else {
+                server.interrupt();
+                serverRunning = false;
+                recvBtn.setText("Start Listening");
             }
         });
         return recvBtn;

@@ -2,7 +2,6 @@ package secure.team4.triremelib;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
@@ -16,7 +15,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Server extends Thread {
@@ -30,9 +28,7 @@ public class Server extends Thread {
         try (ServerSocket server = new ServerSocket(port);
              Socket clientSocket = server.accept(); // open socket
              DataInputStream in = new DataInputStream(
-                     new BufferedInputStream(clientSocket.getInputStream()));
-             DataOutputStream out = new DataOutputStream(
-                     clientSocket.getOutputStream())
+                     new BufferedInputStream(clientSocket.getInputStream()))
         ) {
             String fileName = in.readUTF();
             received.set(true);
@@ -52,7 +48,7 @@ public class Server extends Thread {
                     return null;
                 });
                 Optional<Boolean> result = dialog.showAndWait();
-                if (result.get()) {
+                if (result.isPresent() && result.get()) {
                     System.out.println("yes");
                     dialogResult.set(1);
                 } else {
