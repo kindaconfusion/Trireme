@@ -1,3 +1,8 @@
+/**
+ * Client handles initial connection to server,
+ * then makes handshake and sends file.
+ */
+
 package secure.team4.triremelib;
 
 import java.io.*;
@@ -27,29 +32,40 @@ public class Client extends Thread {
         System.out.println("Client running");
         File file = new File(filePath);
         try (
+                // Open file stream
                 InputStream fis = new FileInputStream(file);
-                //RandomAccessFile file = new RandomAccessFile(new File(filePath), "r"); // read in file
-                Socket socket = new Socket(host, hostPort); // open socket
+                // Open socket connection
+                Socket socket = new Socket(host, hostPort);
                 DataInputStream in = new DataInputStream(socket.getInputStream());
                 DataOutputStream out = new DataOutputStream(
                         socket.getOutputStream());
-                DigestOutputStream digest = new DigestOutputStream(out, MessageDigest.getInstance("SHA-512"))) {
+                // Create SHA-512 hash as we stream file
+                // DigestOutputStream is a wrapper around a DataOutputStream.
+                // Any data written to digest updates the file hash, then is sent over the network.
+                DigestOutputStream digest = new DigestOutputStream(out, MessageDigest.getInstance("SHA-512")))
+        {
             String fileName = String.valueOf(path.getFileName());
+            // Send file name to server
             out.writeUTF(fileName);
+            // Send file length to server
             out.writeLong(file.length());
-
 
             digest.on(true);
             int count;
+            // Stream file over socket
             while ((count = fis.read(contentBuf)) > 0) {
                 digest.write(contentBuf, 0, count);
+                // Acknowledge "OK" signal
                 in.readUTF();
             }
+
+            // Convert raw bytes of MessageDigest to string checksum
             StringBuilder hexString = new StringBuilder();
             for (byte b : digest.getMessageDigest().digest()) {
                 // Convert each byte to a 2-digit hex string and append it to the builder
                 hexString.append(String.format("%02x", b));
             }
+            // Send file hash
             out.writeUTF(hexString.toString());
             System.out.println(hexString);
             in.readUTF();
