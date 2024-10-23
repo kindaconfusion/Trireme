@@ -34,9 +34,11 @@ public class Client extends Thread {
                 DataOutputStream out = new DataOutputStream(
                         socket.getOutputStream());
                 DigestOutputStream digest = new DigestOutputStream(out, MessageDigest.getInstance("SHA-512"))) {
-            out.writeLong(file.length());
             String fileName = String.valueOf(path.getFileName());
             out.writeUTF(fileName);
+            out.writeLong(file.length());
+
+
             digest.on(true);
             int count;
             while ((count = fis.read(contentBuf)) > 0) {

@@ -1,6 +1,11 @@
 package secure.team4.triremelib;
 
+import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -9,6 +14,10 @@ import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Server extends Thread {
     private final int port;
@@ -25,25 +34,48 @@ public class Server extends Thread {
              DataOutputStream out = new DataOutputStream(
                      clientSocket.getOutputStream())
         ) {
+            String fileName = in.readUTF();
             received.set(true);
-            while(!this.isInterrupted()){
-                Thread.sleep(1000);
+            final CountDownLatch latch = new CountDownLatch(1);
+            final AtomicInteger dialogResult = new AtomicInteger(0);
+            Platform.runLater(() -> {
+                Dialog<Boolean> dialog = new Dialog<>();
+                dialog.setTitle("Transfer Request");
+                ButtonType yesBtn = new ButtonType("Yes", ButtonBar.ButtonData.YES);
+                dialog.getDialogPane().getButtonTypes().addAll(yesBtn, ButtonType.NO);
+                dialog.setHeaderText("File Incoming");
+                dialog.setContentText("Somebody is trying to send \"" + fileName + "\". Would you like to accept?");
+                dialog.setResultConverter(dialogButton -> {
+                    if (dialogButton == yesBtn) {
+                        return true;
+                    }
+                    return null;
+                });
+                Optional<Boolean> result = dialog.showAndWait();
+                if (result.get()) {
+                    System.out.println("yes");
+                    dialogResult.set(1);
+                } else {
+                    dialogResult.set(2);
+                }
+                latch.countDown();
+            });
+            latch.await();
+            if (dialogResult.get() == 1) {
+                accept(clientSocket);
             }
-            accept(clientSocket);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
 
     public void accept(Socket socket) {
         int PACKET_SIZE = 1000;
-            try(
+        try {
             DataInputStream in = new DataInputStream(
                     new BufferedInputStream(socket.getInputStream()));
             DataOutputStream out = new DataOutputStream(
-                    socket.getOutputStream())) {
+                    socket.getOutputStream());
                 long fileSize;
                 byte[] packet = new byte[1000];
                 Arrays.fill(packet, (byte) 0x00);
