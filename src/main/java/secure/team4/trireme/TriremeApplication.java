@@ -2,7 +2,7 @@ package secure.team4.trireme;
 
 import atlantafx.base.theme.PrimerDark;
 import javafx.application.Application;
-import javafx.geometry.HPos;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -16,24 +16,28 @@ import secure.team4.triremelib.Client;
 import secure.team4.triremelib.Server;
 
 import java.io.File;
-import java.util.function.UnaryOperator;
+import java.io.FileInputStream;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.util.Enumeration;
+import java.util.Optional;
 
 public class TriremeApplication extends Application {
-
-    private boolean serverRunning = false;
     private Server server;
-    private Thread client;
-    private UnaryOperator<TextFormatter.Change> portFilter;
+    private Client client;
+    private Thread clientThread;
+    private boolean serverRunning = false;
+
+    // Paths to keystore and truststore
+    private final String keystorePath = "keystore.p12";
+    private final String truststorePath = "truststore.p12";
 
     @Override
     public void start(Stage stage) {
         // Set up the application theme
         Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
 
-        // Initialize the port filter
-        portFilter = createPortFilter();
-
-        // Create the main layout grid
+        // Create the main grid pane
         GridPane grid = createMainGridPane();
 
         // Create UI components
@@ -45,31 +49,25 @@ public class TriremeApplication extends Application {
         Button sendButton = createSendButton(sendHostField, sendPortField, fileTextField);
         TextField recvPortField = createRecvPortField();
         Button recvButton = createRecvButton(recvPortField);
+        Button exportCertButton = createExportCertButton();
+        Button importCertButton = createImportCertButton();
+        Button resetCertButton = createResetCertButton();
+        Button viewCertsButton = createViewCertsButton();
 
         // Add components to the grid
         addComponentsToGrid(grid, logoImageView, sendHostField, sendPortField, selectFileButton,
-                fileTextField, sendButton, recvPortField, recvButton);
+                fileTextField, sendButton, recvPortField, recvButton, exportCertButton, importCertButton, resetCertButton, viewCertsButton);
 
         // Set up the scene and stage
-        Scene scene = new Scene(grid, 600, 500);
+        Scene scene = new Scene(grid, 600, 600);
         stage.setTitle("Trireme");
         stage.setScene(scene);
         stage.show();
     }
 
-    private UnaryOperator<TextFormatter.Change> createPortFilter() {
-        return change -> {
-            String newText = change.getControlNewText();
-            if (newText.matches("-?([1-9][0-9]*)?") && newText.length() < 6) {
-                return change;
-            }
-            return null;
-        };
-    }
-
     private GridPane createMainGridPane() {
         GridPane grid = new GridPane();
-        grid.setAlignment(Pos.CENTER);
+        grid.setAlignment(Pos.TOP_CENTER);
         grid.setHgap(20);
         grid.setVgap(10);
         grid.setPadding(new Insets(25, 25, 25, 25));
@@ -92,7 +90,13 @@ public class TriremeApplication extends Application {
     private TextField createSendPortField() {
         TextField sendPort = new TextField();
         sendPort.setPromptText("Host Port");
-        sendPort.setTextFormatter(new TextFormatter<>(new IntegerStringConverter(), null, portFilter));
+        sendPort.setTextFormatter(new TextFormatter<>(new IntegerStringConverter(), null, change -> {
+            String newText = change.getControlNewText();
+            if (newText.matches("\\d*")) {
+                return change;
+            }
+            return null;
+        }));
         return sendPort;
     }
 
@@ -138,8 +142,10 @@ public class TriremeApplication extends Application {
                 return;
             }
 
-            client = new Thread(new Client(host, port, filePath));
-            client.start();
+            // Start the client thread
+            client = new Client(host, port, filePath);
+            clientThread = new Thread(client);
+            clientThread.start();
         });
         return sendBtn;
     }
@@ -147,7 +153,13 @@ public class TriremeApplication extends Application {
     private TextField createRecvPortField() {
         TextField recvPort = new TextField();
         recvPort.setPromptText("Listening Port");
-        recvPort.setTextFormatter(new TextFormatter<>(new IntegerStringConverter(), null, portFilter));
+        recvPort.setTextFormatter(new TextFormatter<>(new IntegerStringConverter(), null, change -> {
+            String newText = change.getControlNewText();
+            if (newText.matches("\\d*")) {
+                return change;
+            }
+            return null;
+        }));
         return recvPort;
     }
 
@@ -176,7 +188,9 @@ public class TriremeApplication extends Application {
                 recvBtn.setText("Stop Listening");
                 server.start();
             } else {
-                server.interrupt();
+                if (server != null) {
+                    server.closeServer();
+                }
                 serverRunning = false;
                 recvBtn.setText("Start Listening");
             }
@@ -184,33 +198,164 @@ public class TriremeApplication extends Application {
         return recvBtn;
     }
 
-    private void addComponentsToGrid(GridPane grid, ImageView logoImageView, TextField sendHostField,
-                                     TextField sendPortField, Button selectFileButton, TextField fileTextField,
-                                     Button sendButton, TextField recvPortField, Button recvButton) {
-        grid.add(logoImageView, 0, 0, 2, 1);
-        GridPane.setHalignment(logoImageView, HPos.CENTER);
-
-        // Sending section
-        grid.add(sendHostField, 0, 1);
-        grid.add(sendPortField, 0, 2);
-        grid.add(selectFileButton, 0, 3);
-        grid.add(fileTextField, 0, 4);
-        grid.add(sendButton, 0, 5);
-
-        // Receiving section
-        grid.add(recvPortField, 1, 1);
-        grid.add(recvButton, 1, 2);
+    private Button createExportCertButton() {
+        Button exportBtn = new Button("Export Certificate");
+        exportBtn.setOnAction(actionEvent -> {
+            try {
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Save Certificate");
+                fileChooser.setInitialFileName("certificate.cer");
+                File file = fileChooser.showSaveDialog(null);
+                if (file != null) {
+                    // Create a temporary client instance if none exists
+                    if (client == null) {
+                        client = new Client("", 0, "");
+                    }
+                    client.exportCertificate(file);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                showAlert(Alert.AlertType.ERROR, "Export Error", "Failed to export certificate: " + e.getMessage());
+            }
+        });
+        return exportBtn;
     }
 
+    private Button createImportCertButton() {
+        Button importBtn = new Button("Import Certificate");
+        importBtn.setOnAction(actionEvent -> {
+            try {
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Import Certificate");
+                File file = fileChooser.showOpenDialog(null);
+                if (file != null) {
+                    TextInputDialog aliasDialog = new TextInputDialog();
+                    aliasDialog.setTitle("Certificate Alias");
+                    aliasDialog.setHeaderText("Enter an alias for the certificate (e.g., IP address):");
+                    Optional<String> aliasResult = aliasDialog.showAndWait();
+                    if (aliasResult.isPresent() && !aliasResult.get().isEmpty()) {
+                        String alias = aliasResult.get();
+                        // Create a temporary client instance if none exists
+                        if (client == null) {
+                            client = new Client("", 0, "");
+                        }
+                        client.importCertificate(file, alias);
+                    } else {
+                        showAlert(Alert.AlertType.ERROR, "Import Error", "Alias cannot be empty.");
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                showAlert(Alert.AlertType.ERROR, "Import Error", "Failed to import certificate: " + e.getMessage());
+            }
+        });
+        return importBtn;
+    }
+
+    private Button createResetCertButton() {
+        Button resetBtn = new Button("Reset Certificates");
+        resetBtn.setOnAction(actionEvent -> {
+            File ksFile = new File(keystorePath);
+            File tsFile = new File(truststorePath);
+
+            boolean ksDeleted = ksFile.delete();
+            boolean tsDeleted = tsFile.delete();
+
+            String message = "Certificates reset:\n";
+            message += "Keystore deleted: " + ksDeleted + "\n";
+            message += "Truststore deleted: " + tsDeleted;
+
+            showAlert(Alert.AlertType.INFORMATION, "Reset Certificates", message);
+        });
+        return resetBtn;
+    }
+
+    private Button createViewCertsButton() {
+        Button viewBtn = new Button("View Certificates");
+        viewBtn.setOnAction(actionEvent -> {
+            try {
+                // Load truststore
+                KeyStore trustStore = KeyStore.getInstance("PKCS12");
+                File tsFile = new File(truststorePath);
+                if (tsFile.exists()) {
+                    trustStore.load(new FileInputStream(truststorePath), null);
+                } else {
+                    showAlert(Alert.AlertType.INFORMATION, "No Certificates", "No certificates have been imported.");
+                    return;
+                }
+
+                // Build list of certificates
+                StringBuilder certList = new StringBuilder();
+                Enumeration<String> aliases = trustStore.aliases();
+                while (aliases.hasMoreElements()) {
+                    String alias = aliases.nextElement();
+                    Certificate cert = trustStore.getCertificate(alias);
+                    certList.append("Alias: ").append(alias).append("\n");
+                    certList.append(cert.toString()).append("\n\n");
+                }
+
+                // Display in a dialog
+                Alert certAlert = new Alert(Alert.AlertType.INFORMATION);
+                certAlert.setTitle("Trusted Certificates");
+                certAlert.setHeaderText("List of Trusted Certificates");
+                TextArea textArea = new TextArea(certList.toString());
+                textArea.setEditable(false);
+                textArea.setWrapText(true);
+                certAlert.getDialogPane().setContent(textArea);
+                certAlert.showAndWait();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                showAlert(Alert.AlertType.ERROR, "View Certificates Failed", e.getMessage());
+            }
+        });
+        return viewBtn;
+    }
+
+    private void addComponentsToGrid(GridPane grid, ImageView logoImageView, TextField sendHostField,
+                                     TextField sendPortField, Button selectFileButton, TextField fileTextField,
+                                     Button sendButton, TextField recvPortField, Button recvButton,
+                                     Button exportCertButton, Button importCertButton, Button resetCertButton, Button viewCertsButton) {
+        grid.add(logoImageView, 0, 0, 2, 1);
+        GridPane.setHalignment(logoImageView, javafx.geometry.HPos.CENTER);
+
+        // Sending section
+        grid.add(new Label("Send to:"), 0, 1);
+        grid.add(sendHostField, 0, 2);
+        grid.add(sendPortField, 0, 3);
+        grid.add(selectFileButton, 0, 4);
+        grid.add(fileTextField, 0, 5);
+        grid.add(sendButton, 0, 6);
+
+        // Receiving section
+        grid.add(new Label("Receive from:"), 1, 1);
+        grid.add(recvPortField, 1, 2);
+        grid.add(recvButton, 1, 3);
+
+        // Export/Import Buttons
+        grid.add(exportCertButton, 0, 7);
+        grid.add(importCertButton, 1, 7);
+
+        // Reset and View Certificates Buttons
+        grid.add(resetCertButton, 0, 8);
+        grid.add(viewCertsButton, 1, 8);
+    }
+
+    /**
+     * Displays an alert dialog to the user.
+     */
     private void showAlert(Alert.AlertType alertType, String title, String message) {
-        Alert alert = new Alert(alertType);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        Platform.runLater(() -> {
+            Alert alert = new Alert(alertType, message, ButtonType.OK);
+            alert.setTitle(title);
+            alert.setHeaderText(null);
+            alert.showAndWait();
+        });
     }
 
     public static void main(String[] args) {
+        // Uncomment the following line to enable SSL debugging
+        // System.setProperty("javax.net.debug", "all");
         launch();
     }
 }
