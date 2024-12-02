@@ -28,8 +28,8 @@ public class SelfSignedCertificateGenerator {
         long now = System.currentTimeMillis();
         Date startDate = new Date(now);
 
-        // Valid for 10 years
-        Date endDate = new Date(now + 3650L * 24 * 60 * 60 * 1000L);
+        // Valid for 1 day
+        Date endDate = new Date(now + 24 * 60 * 60 * 1000L);
 
         // Serial number
         BigInteger serialNumber = BigInteger.valueOf(now);
