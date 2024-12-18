@@ -44,6 +44,9 @@ dependencies {
   implementation 'org.bouncycastle:bcpkix-jdk18on:1.79'
   implementation 'org.openjfx:javafx-controls:21'
   implementation 'com.sshtools:two-slices:0.9.4'
+  implementation group: 'org.openjfx', name: 'javafx-graphics', version: 21, classifier: 'win'
+  implementation group: 'org.openjfx', name: 'javafx-graphics', version: 21, classifier: 'mac'
+  implementation group: 'org.openjfx', name: 'javafx-graphics', version: 21, classifier: 'linux'
   testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
 
