@@ -2,9 +2,11 @@
 Trireme is the product of four students' Secure Software Engineering class final project. It is a lightweight, secure peer-to-peer file transfer application that runs on any platform.
 
 ## Building
-`./gradlew build`
+`./gradlew shadowjar`
 
 ## Usage
+Java 21 is required on all platforms.
+
 ### Receiving
 - Import sender's certificate
 - Enter receive port
