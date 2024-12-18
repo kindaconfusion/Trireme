@@ -26,7 +26,6 @@ public class Server extends Thread {
 
     // Paths to keystore and truststore
     private final String keystorePath = "keystore.p12";
-    private final String truststorePath = "truststore.p12";
 
     public Server(int port) {
         this.port = port;
@@ -99,6 +98,7 @@ public class Server extends Thread {
 
         // Load the truststore
         KeyStore trustStore = KeyStore.getInstance("PKCS12");
+        String truststorePath = "truststore.p12";
         File tsFile = new File(truststorePath);
         if (tsFile.exists()) {
             try (InputStream tsIs = new FileInputStream(truststorePath)) {
@@ -343,7 +343,4 @@ public class Server extends Thread {
         this.progress.set(bytesRead);
     }
 
-    public long getProgress() {
-        return progress.get();
-    }
 }

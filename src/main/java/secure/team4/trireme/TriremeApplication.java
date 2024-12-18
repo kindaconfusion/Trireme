@@ -3,8 +3,6 @@ package secure.team4.trireme;
 import atlantafx.base.theme.PrimerDark;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -12,7 +10,6 @@ import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -25,6 +22,7 @@ import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.util.Enumeration;
+import java.util.Objects;
 import java.util.Optional;
 
 public class TriremeApplication extends Application {
@@ -79,7 +77,7 @@ public class TriremeApplication extends Application {
     }
 
     private ImageView createLogoImageView() {
-        ImageView imageView = new ImageView(getClass().getResource("/trireme-logo.png").toString());
+        ImageView imageView = new ImageView(Objects.requireNonNull(getClass().getResource("/trireme-logo.png")).toString());
         imageView.setFitHeight(120);
         imageView.setFitWidth(283);
         return imageView;
@@ -158,7 +156,7 @@ public class TriremeApplication extends Application {
             ProgressBar bar = new ProgressBar(0);
             bar.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
             grid.add(bar, 0, 7);
-            server.progressProperty().addListener((ov, old_val, new_val) -> bar.setProgress(new_val.doubleValue()));
+            client.progressProperty().addListener((ov, old_val, new_val) -> bar.setProgress(new_val.doubleValue()));
         });
         return sendBtn;
     }
@@ -217,9 +215,6 @@ public class TriremeApplication extends Application {
         return recvBtn;
     }
 
-    public void createProgressBar() {
-
-    }
 
     private MenuItem createExportCertButton() {
         MenuItem exportBtn = new MenuItem("Export Certificate");
