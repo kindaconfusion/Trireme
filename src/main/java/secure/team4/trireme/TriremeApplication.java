@@ -29,6 +29,7 @@ public class TriremeApplication extends Application {
     private Client client;
     private Thread clientThread;
     private boolean serverRunning = false;
+    private GridPane grid;
 
     // Paths to keystore and truststore
     private final String keystorePath = "keystore.p12";
@@ -40,25 +41,12 @@ public class TriremeApplication extends Application {
         Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
 
         // Create the main grid pane
-        GridPane grid = createMainGridPane();
+        grid = createMainGridPane();
 
-        // Create UI components
-        ImageView logoImageView = createLogoImageView();
-        TextField sendHostField = createSendHostField();
-        TextField sendPortField = createSendPortField();
-        TextField fileTextField = createFileTextField();
-        Button selectFileButton = createSelectFileButton(fileTextField);
-        Button sendButton = createSendButton(sendHostField, sendPortField, fileTextField);
-        TextField recvPortField = createRecvPortField();
-        Button recvButton = createRecvButton(recvPortField);
-        Button exportCertButton = createExportCertButton();
-        Button importCertButton = createImportCertButton();
-        Button resetCertButton = createResetCertButton();
-        Button viewCertsButton = createViewCertsButton();
+
 
         // Add components to the grid
-        addComponentsToGrid(grid, logoImageView, sendHostField, sendPortField, selectFileButton,
-                fileTextField, sendButton, recvPortField, recvButton, exportCertButton, importCertButton, resetCertButton, viewCertsButton);
+        addComponentsToGrid();
 
         // Set up the scene and stage
         Scene scene = new Scene(grid, 600, 600);
@@ -102,14 +90,14 @@ public class TriremeApplication extends Application {
         return sendPort;
     }
 
-    private TextField createFileTextField() {
+    private TextField createFileText() {
         TextField fileText = new TextField();
         fileText.setPromptText("File");
         fileText.setEditable(false);
         return fileText;
     }
 
-    private Button createSelectFileButton(TextField fileTextField) {
+    private Button createSelectFileButton(TextField fileText) {
         Button selectBtn = new Button("Select File");
         FileChooser fileChooser = new FileChooser();
         selectBtn.setOnAction(actionEvent -> {
@@ -118,7 +106,7 @@ public class TriremeApplication extends Application {
             fileChooser.getExtensionFilters().add(extFilter);
             File file = fileChooser.showOpenDialog(stage);
             if (file != null) {
-                fileTextField.setText(file.getAbsolutePath());
+                fileText.setText(file.getAbsolutePath());
             }
         });
         return selectBtn;
@@ -206,6 +194,10 @@ public class TriremeApplication extends Application {
             }
         });
         return recvBtn;
+    }
+
+    public void createProgressBar() {
+
     }
 
     private Button createExportCertButton() {
@@ -322,33 +314,35 @@ public class TriremeApplication extends Application {
         return viewBtn;
     }
 
-    private void addComponentsToGrid(GridPane grid, ImageView logoImageView, TextField sendHostField,
-                                     TextField sendPortField, Button selectFileButton, TextField fileTextField,
-                                     Button sendButton, TextField recvPortField, Button recvButton,
-                                     Button exportCertButton, Button importCertButton, Button resetCertButton, Button viewCertsButton) {
-        grid.add(logoImageView, 0, 0, 2, 1);
-        GridPane.setHalignment(logoImageView, javafx.geometry.HPos.CENTER);
+    private void addComponentsToGrid() {
+        ImageView logo = createLogoImageView();
+        grid.add(logo, 0, 0, 2, 1);
+        GridPane.setHalignment(logo, javafx.geometry.HPos.CENTER);
 
         // Sending section
         grid.add(new Label("Send to:"), 0, 1);
-        grid.add(sendHostField, 0, 2);
-        grid.add(sendPortField, 0, 3);
-        grid.add(selectFileButton, 0, 4);
-        grid.add(fileTextField, 0, 5);
-        grid.add(sendButton, 0, 6);
+        TextField sendHost = createSendHostField();
+        grid.add(sendHost, 0, 2);
+        TextField sendPort = createSendPortField();
+        grid.add(sendPort, 0, 3);
+        TextField fileText = createFileText();
+        grid.add(fileText, 0, 5);
+        grid.add(createSelectFileButton(fileText), 0, 4);
+        grid.add(createSendButton(sendHost, sendPort, fileText), 0, 6);
 
         // Receiving section
         grid.add(new Label("Receive from:"), 1, 1);
-        grid.add(recvPortField, 1, 2);
-        grid.add(recvButton, 1, 3);
+        TextField field = createRecvPortField();
+        grid.add(field, 1, 2);
+        grid.add(createRecvButton(field), 1, 3);
 
         // Export/Import Buttons
-        grid.add(exportCertButton, 0, 7);
-        grid.add(importCertButton, 1, 7);
+        grid.add(createExportCertButton(), 0, 7);
+        grid.add(createImportCertButton(), 1, 7);
 
         // Reset and View Certificates Buttons
-        grid.add(resetCertButton, 0, 8);
-        grid.add(viewCertsButton, 1, 8);
+        grid.add(createResetCertButton(), 0, 8);
+        grid.add(createViewCertsButton(), 1, 8);
     }
 
     /**
