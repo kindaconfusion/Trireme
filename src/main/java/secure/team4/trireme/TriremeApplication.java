@@ -7,6 +7,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -56,6 +57,7 @@ public class TriremeApplication extends Application {
 
         // Set up the scene and stage
         Scene scene = new Scene(vBox, 550, 550);
+        stage.getIcons().add(new Image(String.valueOf(getClass().getResource("/trireme-notext.png"))));
         stage.setMinWidth(340);
         stage.setMinHeight(550);
         stage.setTitle("Trireme");
