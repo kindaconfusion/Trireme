@@ -11,6 +11,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.converter.IntegerStringConverter;
@@ -42,14 +43,17 @@ public class TriremeApplication extends Application {
 
         // Create the main grid pane
         grid = createMainGridPane();
-
-
-
+        Menu certMenu = new Menu("Certificates");
+        certMenu.getItems().addAll(createViewCertsButton(), createExportCertButton(), createImportCertButton(), createResetCertButton());
+        MenuBar menuBar = new MenuBar(certMenu);
+        VBox vBox = new VBox(menuBar);
         // Add components to the grid
         addComponentsToGrid();
 
+        vBox.getChildren().add(grid);
+
         // Set up the scene and stage
-        Scene scene = new Scene(grid, 600, 600);
+        Scene scene = new Scene(vBox, 600, 600);
         stage.setTitle("Trireme");
         stage.setScene(scene);
         stage.show();
@@ -200,8 +204,8 @@ public class TriremeApplication extends Application {
 
     }
 
-    private Button createExportCertButton() {
-        Button exportBtn = new Button("Export Certificate");
+    private MenuItem createExportCertButton() {
+        MenuItem exportBtn = new MenuItem("Export Certificate");
         exportBtn.setOnAction(actionEvent -> {
             try {
                 FileChooser fileChooser = new FileChooser();
@@ -223,8 +227,8 @@ public class TriremeApplication extends Application {
         return exportBtn;
     }
 
-    private Button createImportCertButton() {
-        Button importBtn = new Button("Import Certificate");
+    private MenuItem createImportCertButton() {
+        MenuItem importBtn = new MenuItem("Import Certificate");
         importBtn.setOnAction(actionEvent -> {
             try {
                 FileChooser fileChooser = new FileChooser();
@@ -254,8 +258,8 @@ public class TriremeApplication extends Application {
         return importBtn;
     }
 
-    private Button createResetCertButton() {
-        Button resetBtn = new Button("Reset Certificates");
+    private MenuItem createResetCertButton() {
+        MenuItem resetBtn = new MenuItem("Reset Certificates");
         resetBtn.setOnAction(actionEvent -> {
             File ksFile = new File(keystorePath);
             File tsFile = new File(truststorePath);
@@ -272,8 +276,8 @@ public class TriremeApplication extends Application {
         return resetBtn;
     }
 
-    private Button createViewCertsButton() {
-        Button viewBtn = new Button("View Certificates");
+    private MenuItem createViewCertsButton() {
+        MenuItem viewBtn = new MenuItem("View Certificates");
         viewBtn.setOnAction(actionEvent -> {
             try {
                 // Load truststore
@@ -335,14 +339,6 @@ public class TriremeApplication extends Application {
         TextField field = createRecvPortField();
         grid.add(field, 1, 2);
         grid.add(createRecvButton(field), 1, 3);
-
-        // Export/Import Buttons
-        grid.add(createExportCertButton(), 0, 7);
-        grid.add(createImportCertButton(), 1, 7);
-
-        // Reset and View Certificates Buttons
-        grid.add(createResetCertButton(), 0, 8);
-        grid.add(createViewCertsButton(), 1, 8);
     }
 
     /**
