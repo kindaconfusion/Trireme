@@ -4,8 +4,10 @@ Trireme is the product of four students' Secure Software Engineering class final
 ## Building
 `./gradlew shadowjar`
 
+Windows .exe is packaged using Launch4j.
+
 ## Usage
-Java 21 is required on all platforms.
+Java 21 or greater is required on all platforms.
 
 ### Receiving
 - Import sender's certificate
