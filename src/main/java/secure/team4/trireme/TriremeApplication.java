@@ -10,7 +10,9 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -53,17 +55,25 @@ public class TriremeApplication extends Application {
         vBox.getChildren().add(grid);
 
         // Set up the scene and stage
-        Scene scene = new Scene(vBox, 600, 600);
+        Scene scene = new Scene(vBox, 550, 550);
+        stage.setMinWidth(340);
+        stage.setMinHeight(550);
         stage.setTitle("Trireme");
         stage.setScene(scene);
         stage.show();
+
     }
 
     private GridPane createMainGridPane() {
         GridPane grid = new GridPane();
-        grid.setAlignment(Pos.TOP_CENTER);
+        grid.setAlignment(Pos.CENTER);
         grid.setHgap(20);
         grid.setVgap(10);
+        ColumnConstraints column1 = new ColumnConstraints();
+        column1.setPercentWidth(50);
+        ColumnConstraints column2 = new ColumnConstraints();
+        column2.setPercentWidth(50);
+        grid.getColumnConstraints().addAll(column1, column2);
         grid.setPadding(new Insets(25, 25, 25, 25));
         return grid;
     }
@@ -77,12 +87,14 @@ public class TriremeApplication extends Application {
 
     private TextField createSendHostField() {
         TextField sendHost = new TextField();
+        sendHost.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         sendHost.setPromptText("Hostname");
         return sendHost;
     }
 
     private TextField createSendPortField() {
         TextField sendPort = new TextField();
+        sendPort.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         sendPort.setPromptText("Host Port");
         sendPort.setTextFormatter(new TextFormatter<>(new IntegerStringConverter(), null, change -> {
             String newText = change.getControlNewText();
@@ -96,6 +108,7 @@ public class TriremeApplication extends Application {
 
     private TextField createFileText() {
         TextField fileText = new TextField();
+        fileText.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         fileText.setPromptText("File");
         fileText.setEditable(false);
         return fileText;
@@ -103,6 +116,7 @@ public class TriremeApplication extends Application {
 
     private Button createSelectFileButton(TextField fileText) {
         Button selectBtn = new Button("Select File");
+        selectBtn.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         FileChooser fileChooser = new FileChooser();
         selectBtn.setOnAction(actionEvent -> {
             Stage stage = (Stage) selectBtn.getScene().getWindow();
@@ -118,6 +132,7 @@ public class TriremeApplication extends Application {
 
     private Button createSendButton(TextField sendHostField, TextField sendPortField, TextField fileTextField) {
         Button sendBtn = new Button("Send");
+        sendBtn.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         sendBtn.setOnAction(actionEvent -> {
             String host = sendHostField.getText();
             String portText = sendPortField.getText();
@@ -141,6 +156,7 @@ public class TriremeApplication extends Application {
             clientThread = new Thread(client);
             clientThread.start();
             ProgressBar bar = new ProgressBar(0);
+            bar.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
             grid.add(bar, 0, 7);
             server.progressProperty().addListener((ov, old_val, new_val) -> bar.setProgress(new_val.doubleValue()));
         });
@@ -149,6 +165,7 @@ public class TriremeApplication extends Application {
 
     private TextField createRecvPortField() {
         TextField recvPort = new TextField();
+        recvPort.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         recvPort.setPromptText("Listening Port");
         recvPort.setTextFormatter(new TextFormatter<>(new IntegerStringConverter(), null, change -> {
             String newText = change.getControlNewText();
@@ -162,6 +179,7 @@ public class TriremeApplication extends Application {
 
     private Button createRecvButton(TextField recvPortField) {
         Button recvBtn = new Button("Start Listening");
+        recvBtn.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
         recvBtn.setOnAction(actionEvent -> {
             if (!serverRunning) {
@@ -185,6 +203,7 @@ public class TriremeApplication extends Application {
                 recvBtn.setText("Stop Listening");
                 server.start();
                 ProgressBar bar = new ProgressBar(0);
+                bar.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
                 grid.add(bar, 1, 4);
                 server.progressProperty().addListener((ov, old_val, new_val) -> bar.setProgress(new_val.doubleValue()));
             } else {
