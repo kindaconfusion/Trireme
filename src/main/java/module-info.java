@@ -4,6 +4,7 @@ module secure.team4.trireme {
     requires org.bouncycastle.provider;
     requires org.bouncycastle.pkix;
     requires java.prefs;
+    requires com.sshtools.twoslices;
 
 
     opens secure.team4.trireme to javafx.fxml;

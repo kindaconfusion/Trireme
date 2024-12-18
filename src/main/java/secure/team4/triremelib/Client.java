@@ -1,5 +1,7 @@
 package secure.team4.triremelib;
 
+import com.sshtools.twoslices.Toast;
+import com.sshtools.twoslices.ToastType;
 import javafx.application.Platform;
 import javafx.scene.control.*;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -85,6 +87,7 @@ public class Client extends Thread {
                 System.out.println("Server response: " + finalResponse);
 
                 showAlert(Alert.AlertType.INFORMATION, "Transfer Complete", finalResponse);
+                Toast.toast(ToastType.INFO, "Trireme", "Transfer complete");
 
             }
         } catch (Exception e) {

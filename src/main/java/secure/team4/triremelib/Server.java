@@ -1,5 +1,7 @@
 package secure.team4.triremelib;
 
+import com.sshtools.twoslices.Toast;
+import com.sshtools.twoslices.ToastType;
 import javafx.application.Platform;
 import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
@@ -279,9 +281,11 @@ public class Server extends Thread {
             // Compare hashes
             if (calculatedHash.equals(clientHash)) {
                 out.writeUTF("File received and verified successfully.");
+                Toast.toast(ToastType.INFO, "Trireme", "File received and verified successfully.");
                 System.out.println("File checksum verified.");
             } else {
                 out.writeUTF("File received but checksum does not match.");
+                Toast.toast(ToastType.WARNING, "Trireme", "File received but checksum does not match");
                 showAlert(Alert.AlertType.WARNING, "Checksum Mismatch",
                         "Checksum of the received file does not match the one sent by the sender. This file may be corrupt or tampered with.");
                 System.out.println("Warning: File checksum does not match. The file may be corrupt or tampered with.");
