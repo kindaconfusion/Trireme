@@ -3,6 +3,8 @@ package secure.team4.triremelib;
 import com.sshtools.twoslices.Toast;
 import com.sshtools.twoslices.ToastType;
 import javafx.application.Platform;
+import javafx.beans.property.LongProperty;
+import javafx.beans.property.SimpleLongProperty;
 import javafx.scene.control.*;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -17,6 +19,7 @@ public class Client extends Thread {
     private final String host;
     private final int hostPort;
     private final String filePath;
+    public SimpleLongProperty progress = new SimpleLongProperty(0);
 
     // Paths to keystore and truststore
     private final String keystorePath = "keystore.p12";
@@ -63,9 +66,10 @@ public class Client extends Thread {
                 int count;
 
                 // Stream file over socket
+
                 while ((count = fis.read(contentBuf)) > 0) {
                     digest.write(contentBuf, 0, count);
-
+                    setProgress(getProgress()+count);
                     // Acknowledge packet reception
                     String response = in.readUTF();
                     if (!response.equals("OK")) {
@@ -241,5 +245,17 @@ public class Client extends Thread {
             alert.setHeaderText(null);
             alert.showAndWait();
         });
+    }
+
+    public LongProperty progressProperty() {
+        return progress;
+    }
+
+    public void setProgress(long bytesRead) {
+        this.progress.set(bytesRead);
+    }
+
+    public long getProgress() {
+        return progress.get();
     }
 }

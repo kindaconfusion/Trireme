@@ -140,6 +140,9 @@ public class TriremeApplication extends Application {
             client = new Client(host, port, filePath);
             clientThread = new Thread(client);
             clientThread.start();
+            ProgressBar bar = new ProgressBar(0);
+            grid.add(bar, 0, 7);
+            server.progressProperty().addListener((ov, old_val, new_val) -> bar.setProgress(new_val.doubleValue()));
         });
         return sendBtn;
     }
@@ -183,12 +186,7 @@ public class TriremeApplication extends Application {
                 server.start();
                 ProgressBar bar = new ProgressBar(0);
                 grid.add(bar, 1, 4);
-                server.progressProperty().addListener(new ChangeListener<Number>() {
-                    public void changed(ObservableValue<? extends Number> ov,
-                                        Number old_val, Number new_val) {
-                        bar.setProgress(new_val.doubleValue());
-                    }
-                });
+                server.progressProperty().addListener((ov, old_val, new_val) -> bar.setProgress(new_val.doubleValue()));
             } else {
                 if (server != null) {
                     server.closeServer();
