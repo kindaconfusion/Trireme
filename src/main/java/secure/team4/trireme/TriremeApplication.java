@@ -25,6 +25,8 @@ import java.util.Enumeration;
 import java.util.Objects;
 import java.util.Optional;
 
+
+
 public class TriremeApplication extends Application {
     private Server server;
     private Client client;
@@ -363,11 +365,5 @@ public class TriremeApplication extends Application {
             alert.setHeaderText(null);
             alert.showAndWait();
         });
-    }
-
-    public static void main(String[] args) {
-        // Uncomment the following line to enable SSL debugging
-        // System.setProperty("javax.net.debug", "all");
-        launch();
     }
 }
