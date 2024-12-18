@@ -3,6 +3,8 @@ package secure.team4.triremelib;
 import com.sshtools.twoslices.Toast;
 import com.sshtools.twoslices.ToastType;
 import javafx.application.Platform;
+import javafx.beans.property.LongProperty;
+import javafx.beans.property.SimpleLongProperty;
 import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -20,6 +22,7 @@ public class Server extends Thread {
     private final int port;
     private volatile boolean isRunning = false;
     private SSLServerSocket serverSocket;
+    public SimpleLongProperty progress = new SimpleLongProperty();
 
     // Paths to keystore and truststore
     private final String keystorePath = "keystore.p12";
@@ -254,11 +257,13 @@ public class Server extends Thread {
             byte[] buffer = new byte[PACKET_SIZE];
             // Initialize progress tracking
             while (remaining > 0) {
-                int bytesRead = in.read(buffer, 0, (int) Math.min(buffer.length, remaining));
+                long bytesRead = in.read(buffer, 0, (int) Math.min(buffer.length, remaining));
+                setProgress(bytesRead);
                 if (bytesRead == -1) {
+                    Toast.toast(ToastType.ERROR, "Trireme", "Failed to receive file.");
                     throw new EOFException("Unexpected end of stream");
                 }
-                digestOut.write(buffer, 0, bytesRead);
+                digestOut.write(buffer, 0, (int) bytesRead);
                 remaining -= bytesRead;
 
                 // Acknowledge packet reception
@@ -328,5 +333,17 @@ public class Server extends Thread {
         closeServerSocket();
         this.interrupt();
         System.out.println("Server has been stopped.");
+    }
+
+    public LongProperty progressProperty() {
+        return progress;
+    }
+
+    public void setProgress(long bytesRead) {
+        this.progress.set(bytesRead);
+    }
+
+    public long getProgress() {
+        return progress.get();
     }
 }

@@ -3,6 +3,8 @@ package secure.team4.trireme;
 import atlantafx.base.theme.PrimerDark;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -187,6 +189,14 @@ public class TriremeApplication extends Application {
                 serverRunning = true;
                 recvBtn.setText("Stop Listening");
                 server.start();
+                ProgressBar bar = new ProgressBar(0);
+                grid.add(bar, 1, 4);
+                server.progressProperty().addListener(new ChangeListener<Number>() {
+                    public void changed(ObservableValue<? extends Number> ov,
+                                        Number old_val, Number new_val) {
+                        bar.setProgress(new_val.doubleValue());
+                    }
+                });
             } else {
                 if (server != null) {
                     server.closeServer();
